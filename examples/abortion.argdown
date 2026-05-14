@@ -1,0 +1,18 @@
+/*
+ * Abortion debate -- excerpt based on Marquis (1989) and Thomson (1971)
+ * Secondary demo using argument nodes only.
+ */
+
+<Root>: Abortion is morally permissible in at least some cases.
+  + <Bodily Autonomy>: A person has the right to control what happens in their own body.
+    + <SelfOwnership>: People own their own bodies. #intra
+    + <Violinist>: You are not obligated to remain connected to a dying violinist who needs your kidneys. #intra
+    - <Dependency>: The foetus is uniquely dependent in a way that generates special obligations. #inter
+      + <ParentalDuty>: Parents have special duties to their children that strangers do not have. #intra
+      - <Involuntary>: Special duties require voluntary assumption; pregnancy is not always voluntary. #inter
+  - <FutureValue>: Abortion deprives the foetus of a future like ours, which is seriously wrong.
+    + <Symmetry>: What makes killing adult humans wrong also applies to foetuses. #intra
+    + <Potential>: The foetus has the same potential future experiences as an adult. #intra
+    - <Contraception>: This argument implies contraception is also seriously wrong, which is counterintuitive. #inter
+      + <Discontinuity>: There is a morally relevant discontinuity between preventing a person and killing one. #intra
+      - <Arbitrariness>: Any line between contraception and early abortion is drawn arbitrarily. #inter

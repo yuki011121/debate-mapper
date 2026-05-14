@@ -1,0 +1,116 @@
+/*
+ * Lying is sometimes permissible
+ * Canonical demo converted from Ava's debate map.
+ *
+ * Main map: argument nodes only. Numbered PCS blocks are internal structure.
+ */
+
+/* @question Thesis: Is lying always wrong? */
+/* @question carg4_1: Are you culpable for negative consequences when you lie, as opposed to telling the truth? */
+/* @question arg3: Does lying sometimes maximize utility? */
+
+<Thesis>: Lying is sometimes permissible.
+
+(1) Some kinds of cases make lying morally permissible.
+----
+(2) Lying is sometimes permissible.
+
+<carg4_1>: When you lie, you are culpable for any bad results, so you should never lie.
+
+(1) A person who lies takes responsibility for bad consequences caused by the lie.
+----
+(2) Lying is never permissible because liars are culpable for bad results.
+
+<resp4_1_1>: You are only culpable if the results of your lie are reasonably foreseeable.
+
+(1) Moral culpability requires reasonably foreseeable consequences.
+----
+(2) A liar is not culpable for every bad result of a lie.
+
+<cr1_1>: Maybe you assume responsibility for all consequences of a wrong like a lie.
+
+(1) Lying is already a wrong act.
+----
+(2) A liar may assume responsibility for all consequences of that wrong.
+
+<resp4_1_2>: The culpability objection seems like a selfish point of view.
+
+(1) The objection focuses on the liar's culpability rather than the needs of others.
+----
+(2) The culpability objection gives a selfish reason against lying.
+
+<arg1>: White lies such as "yes, you look great in that" are obviously ok.
+
+(1) Some white lies protect feelings without serious harm.
+----
+(2) Some white lies are permissible.
+
+<carg1>: White lies are not obviously permissible because they deceive, frustrate knowledge, and may erode trust.
+
+(1) White lies deceive people and can damage trust.
+----
+(2) White lies are not obviously permissible.
+
+<arg2>: One can be virtuous while occasionally telling lies; for example, lying may be virtuous for a lawyer.
+
+(1) Virtuous people can sometimes have role-based reasons to withhold or distort information.
+----
+(2) Occasional lying can be compatible with virtue.
+
+<carg2>: A virtuous character could never include dishonesty, so being a lawyer who lies is incompatible with virtue.
+
+(1) Dishonesty is a vice.
+----
+(2) A virtuous character cannot include lying.
+
+<resp2>: There are virtuous people who lie, for example Gandhi.
+
+(1) Gandhi is a virtuous person who sometimes used deception strategically.
+----
+(2) Virtuous people can sometimes lie.
+
+<arg3>: Lying may sometimes be necessary to maximize utility, for example lying about Santa Claus makes children happy.
+
+(1) Some lies produce better consequences than telling the truth.
+----
+(2) Lying sometimes maximizes utility.
+
+<carg3_1>: For any given lie, it is not possible to reliably predict whether it will maximize utility.
+
+(1) Consequences of individual lies are uncertain.
+----
+(2) We cannot reliably know that a particular lie maximizes utility.
+
+<resp3_1>: "Do not lie" is a good heuristic rule for achieving the best consequences, while still allowing rare exceptions.
+
+(1) Reliable moral rules can include carefully limited exceptions.
+----
+(2) A utility-based rule against lying can still allow rare lies.
+
+<cr3_1>: It is difficult to identify exception cases.
+
+(1) People often misjudge whether their own case is exceptional.
+----
+(2) Exception cases for lying are difficult to identify.
+
+<carg3_2>: Lying promotes false information, which always decreases utility because truth is useful.
+
+(1) False information makes practical reasoning worse.
+----
+(2) Lying decreases utility by promoting false information.
+
+<Thesis>
+  - <carg4_1>
+    - <resp4_1_1>
+      - <cr1_1>
+    - <resp4_1_2>
+  + <arg1>
+    - <carg1>
+  + <arg2>
+    - <carg2>
+      - <resp2>
+  + <arg3>
+    - <carg3_1>
+      - <resp3_1>
+        - <cr3_1>
+    - <carg3_2>

@@ -1,0 +1,17 @@
+{
+  "name": "debate-mapper",
+  "version": "1.0.0",
+  "description": "Pedagogical debate mapping tool with context-relevance scoring",
+  "main": "src/parser.js",
+  "scripts": {
+    "test": "node src/test.js",
+    "start": "node src/test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@argdown/core": "^1.7.5",
+    "@argdown/node": "^1.7.5"
+  }
+}

@@ -1,0 +1,12 @@
+/*
+ * Nixon Diamond -- classic inheritance example.
+ * Kept as a later semantic-CR test case.
+ */
+
+<Extremist>: Nixon is an extremist.
+  + <Hawk>: Nixon is a hawk.
+    + <Republican>: Nixon is a Republican.
+    - <Quaker>: Nixon is a Quaker.
+  + <Pacifist>: Nixon is a pacifist.
+    + <Quaker>
+    - <Republican>

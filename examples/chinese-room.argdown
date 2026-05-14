@@ -1,0 +1,17 @@
+/*
+ * Chinese Room Argument -- Searle (1980)
+ * Secondary demo using argument nodes only.
+ */
+
+<Root>: Syntax is not sufficient for semantics.
+  + <ChineseRoom>: A system can manipulate symbols correctly without understanding them.
+    + <Formal>: The man in the room follows formal rules only. #intra
+    + <Output>: The output is indistinguishable from a native speaker. #intra
+    - <SystemsReply>: The whole system understands, even if the man alone does not. #inter
+      + <Emergence>: Understanding is a systems-level property. #intra
+      - <Internalize>: If the man internalises all the rules, he still does not understand Chinese. #inter
+  + <Turing>: Passing a behavioural test does not guarantee genuine understanding.
+    + <Behaviour>: Behaviour is consistent with both understanding and mere simulation. #intra
+    - <Functionalism>: Mental states just are functional states; behaving as if you understand is understanding. #inter
+      + <MultipleRealiz>: Mental states can be realised in different physical substrates. #intra
+      - <Intentionality>: Functional states lack original intentionality; they only have derived intentionality. #inter
