@@ -40,18 +40,78 @@ function relationColor(type) {
 }
 
 function crToStroke(score = 0) {
-  return 1.2 + Math.pow(score, 1.6) * 10;
+  return 1.4 + Math.pow(score, 1.2) * 4.2;
 }
 
-function crToNodeBorder(score = 0) {
-  return 1.5 + Math.pow(score, 1.7) * 8;
+function edgeKey(edge) {
+  return `${edge.from}=>${edge.to}:${edge.type}`;
+}
+
+function getNodeVisualScore(data) {
+  return data.ai?.semanticScore ?? data.globalScore ?? 0;
+}
+
+function getEdgeVisualScore(edge, aiAnalysis) {
+  return aiAnalysis?.edges?.[edgeKey(edge)]?.semanticLocalScore ?? edge.localScore ?? 0;
+}
+
+function getNodeTone(score = 0) {
+  if (score >= 0.72) {
+    return {
+      background: '#0f766e',
+      border: '#134e4a',
+      text: '#ffffff',
+      badgeBackground: 'rgba(255, 255, 255, 0.16)',
+      badgeBorder: 'rgba(255, 255, 255, 0.4)',
+      badgeText: '#ffffff',
+      handle: '#134e4a',
+    };
+  }
+
+  if (score >= 0.45) {
+    return {
+      background: '#ccfbf1',
+      border: '#14b8a6',
+      text: '#134e4a',
+      badgeBackground: '#f0fdfa',
+      badgeBorder: '#5eead4',
+      badgeText: '#134e4a',
+      handle: '#0f766e',
+    };
+  }
+
+  if (score >= 0.2) {
+    return {
+      background: '#ecfeff',
+      border: '#67e8f9',
+      text: '#164e63',
+      badgeBackground: '#ffffff',
+      badgeBorder: '#a5f3fc',
+      badgeText: '#164e63',
+      handle: '#0891b2',
+    };
+  }
+
+  return {
+    background: '#ffffff',
+    border: '#cbd5e1',
+    text: '#111827',
+    badgeBackground: '#f3f4f6',
+    badgeBorder: '#d1d5db',
+    badgeText: '#111827',
+    handle: '#6b7280',
+  };
 }
 
 function DebateNode({ data }) {
-  const score = data.globalScore ?? 0;
-  const borderWidth = crToNodeBorder(score);
+  const score = getNodeVisualScore(data);
+  const tone = getNodeTone(score);
+  const hasAiScore = data.ai?.semanticScore != null;
   const selectedRing = data.selected ? '0 0 0 3px rgba(37, 99, 235, 0.25)' : '0 8px 18px rgba(15, 23, 42, 0.12)';
   const aiMismatch = data.ai?.formalDelta != null && Math.abs(data.ai.formalDelta) >= AI_MISMATCH_THRESHOLD;
+  const title = hasAiScore
+    ? `AI semantic CR: ${data.ai.semanticScore} formal global CR: ${data.globalScore} local CR: ${data.crScore}`
+    : `formal global CR: ${data.globalScore} local CR: ${data.crScore}`;
 
   return (
     <div
@@ -59,9 +119,9 @@ function DebateNode({ data }) {
         width: NODE_WIDTH,
         minHeight: NODE_HEIGHT,
         boxSizing: 'border-box',
-        background: '#ffffff',
-        color: '#111827',
-        border: `${borderWidth}px solid ${data.isRoot ? '#111827' : '#6b7280'}`,
+        background: tone.background,
+        color: tone.text,
+        border: `2px solid ${data.isRoot && !hasAiScore ? '#111827' : tone.border}`,
         borderRadius: 6,
         boxShadow: selectedRing,
         padding: '10px 12px',
@@ -70,30 +130,30 @@ function DebateNode({ data }) {
         gap: 7,
         cursor: 'pointer',
       }}
-      title={`global CR: ${data.globalScore} local CR: ${data.crScore}`}
+      title={title}
     >
-      <Handle type="target" position={Position.Top} style={{ background: '#6b7280' }} />
+      <Handle type="target" position={Position.Top} style={{ background: tone.handle }} />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <span style={{
           fontSize: 12,
           fontWeight: 800,
-          color: data.isRoot ? '#111827' : '#374151',
+          color: tone.text,
           textTransform: 'uppercase',
-          letterSpacing: '0.04em',
+          letterSpacing: 0,
         }}>
           {data.title}
         </span>
         <span style={{
           fontSize: 11,
           fontWeight: 800,
-          color: '#111827',
-          background: '#f3f4f6',
-          border: '1px solid #d1d5db',
+          color: tone.badgeText,
+          background: tone.badgeBackground,
+          border: `1px solid ${tone.badgeBorder}`,
           borderRadius: 999,
           padding: '2px 7px',
           whiteSpace: 'nowrap',
         }}>
-          CR {score.toFixed(2)}
+          {hasAiScore ? 'AI CR' : 'CR'} {score.toFixed(2)}
         </span>
       </div>
       {data.ai?.semanticScore != null && (
@@ -113,7 +173,7 @@ function DebateNode({ data }) {
       <div style={{
         fontSize: 14,
         lineHeight: 1.35,
-        fontWeight: 500 + Math.round(score * 300),
+        fontWeight: 520,
         overflowWrap: 'anywhere',
       }}>
         {data.claimText}
@@ -131,7 +191,7 @@ function DebateNode({ data }) {
           {data.contextQuestion}
         </div>
       )}
-      <Handle type="source" position={Position.Bottom} style={{ background: '#6b7280' }} />
+      <Handle type="source" position={Position.Bottom} style={{ background: tone.handle }} />
     </div>
   );
 }
@@ -152,9 +212,10 @@ function toReactFlowNodes(serverNodes, root, aiAnalysis, selectedNodeId) {
   }));
 }
 
-function toReactFlowEdges(serverEdges) {
+function toReactFlowEdges(serverEdges, aiAnalysis) {
   return serverEdges.map((edge, index) => {
     const color = relationColor(edge.type);
+    const score = getEdgeVisualScore(edge, aiAnalysis);
     return {
       id: `e-${index}`,
       // Server edges are child -> parent. The display reads parent -> child.
@@ -163,11 +224,22 @@ function toReactFlowEdges(serverEdges) {
       type: 'smoothstep',
       style: {
         stroke: color,
-        strokeWidth: crToStroke(edge.localScore),
+        strokeWidth: crToStroke(score),
         strokeLinecap: 'round',
       },
-      markerEnd: { type: MarkerType.ArrowClosed, color },
-      data: edge,
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color,
+        width: 10,
+        height: 10,
+        markerUnits: 'userSpaceOnUse',
+        strokeWidth: 1.5,
+      },
+      data: {
+        ...edge,
+        visualScore: score,
+        visualScoreSource: aiAnalysis?.edges?.[edgeKey(edge)] ? 'ai' : 'formal',
+      },
     };
   });
 }
@@ -179,7 +251,7 @@ export default function DebateGraph({ graphData, aiAnalysis = null, selectedNode
   useEffect(() => {
     if (!graphData) return;
     const rfNodes = toReactFlowNodes(graphData.nodes, graphData.root, aiAnalysis, selectedNodeId);
-    const rfEdges = toReactFlowEdges(graphData.edges);
+    const rfEdges = toReactFlowEdges(graphData.edges, aiAnalysis);
     setNodes(applyDagreLayout(rfNodes, rfEdges));
     setEdges(rfEdges);
   }, [aiAnalysis, graphData, selectedNodeId, setEdges, setNodes]);
@@ -210,8 +282,8 @@ export default function DebateGraph({ graphData, aiAnalysis = null, selectedNode
       <MiniMap
         pannable
         zoomable
-        nodeColor={(node) => (node.data?.isRoot ? '#111827' : '#ffffff')}
-        nodeStrokeColor={() => '#6b7280'}
+        nodeColor={(node) => getNodeTone(getNodeVisualScore(node.data || {})).background}
+        nodeStrokeColor={(node) => getNodeTone(getNodeVisualScore(node.data || {})).border}
       />
     </ReactFlow>
   );
