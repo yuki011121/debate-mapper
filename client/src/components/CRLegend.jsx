@@ -9,20 +9,13 @@ const LINE = (color, width) => ({
   flexShrink: 0,
 });
 
-const NODE_SAMPLE = (background, border, color = '#111827') => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 34,
-  height: 22,
-  background,
-  border: `2px solid ${border}`,
-  borderRadius: 4,
-  color,
-  fontSize: 10,
-  fontWeight: 800,
-  flexShrink: 0,
-});
+const NODE_GRADIENT = {
+  height: 12,
+  flex: 1,
+  borderRadius: 999,
+  border: '1px solid #bfdbfe',
+  background: 'linear-gradient(90deg, #eff6ff 0%, #dbeafe 35%, #93c5fd 62%, #1d4ed8 100%)',
+};
 
 export default function CRLegend() {
   return (
@@ -45,7 +38,7 @@ export default function CRLegend() {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <div style={{ color: '#6b7280', fontSize: 10, marginBottom: 5, fontWeight: 800 }}>RELATION WEIGHT</div>
+        <div style={{ color: '#6b7280', fontSize: 10, marginBottom: 5, fontWeight: 800 }}>SIBLING IMPORTANCE</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={LINE('#9ca3af', 2)} />
           <span style={{ color: '#6b7280', fontSize: 11 }}>low</span>
@@ -53,14 +46,20 @@ export default function CRLegend() {
           <span style={LINE('#374151', 5)} />
           <span style={{ color: '#6b7280', fontSize: 11 }}>high</span>
         </div>
+        <div style={{ color: '#6b7280', fontSize: 11, lineHeight: 1.35, marginTop: 6 }}>
+          Edge thickness is min-max normalized among children of the same parent.
+        </div>
       </div>
 
       <div style={{ marginBottom: 12 }}>
         <div style={{ color: '#6b7280', fontSize: 10, marginBottom: 5, fontWeight: 800 }}>NODE WEIGHT</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={NODE_SAMPLE('#ffffff', '#cbd5e1')}>low</span>
-          <span style={{ color: '#6b7280' }}>to</span>
-          <span style={NODE_SAMPLE('#0f766e', '#134e4a', '#ffffff')}>high</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span style={{ color: '#6b7280', fontSize: 11 }}>low</span>
+          <span style={NODE_GRADIENT} />
+          <span style={{ color: '#6b7280', fontSize: 11 }}>high</span>
+        </div>
+        <div style={{ color: '#6b7280', fontSize: 11, lineHeight: 1.35, marginTop: 6 }}>
+          Node color is continuous, so nearby CR scores still differ visually.
         </div>
       </div>
 

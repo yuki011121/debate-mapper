@@ -55,51 +55,103 @@ function getEdgeVisualScore(edge, aiAnalysis) {
   return aiAnalysis?.edges?.[edgeKey(edge)]?.semanticLocalScore ?? edge.localScore ?? 0;
 }
 
+function getEdgeVisualScoreSource(edge, aiAnalysis) {
+  return aiAnalysis?.edges?.[edgeKey(edge)]?.semanticLocalScore != null ? 'ai' : 'formal';
+}
+
+function normalizeEdgeScoresByParent(edges) {
+  const parentGroups = new Map();
+
+  for (const edge of edges) {
+    const group = parentGroups.get(edge.to) || [];
+    group.push(edge);
+    parentGroups.set(edge.to, group);
+  }
+
+  const normalizedScores = new Map();
+
+  for (const group of parentGroups.values()) {
+    const scores = group.map(edge => edge.rawVisualScore);
+    const min = Math.min(...scores);
+    const max = Math.max(...scores);
+    const hasRange = group.length > 1 && max !== min;
+
+    for (const edge of group) {
+      normalizedScores.set(edge.key, hasRange ? (edge.rawVisualScore - min) / (max - min) : 0.5);
+    }
+  }
+
+  return normalizedScores;
+}
+
+function clamp01(value = 0) {
+  return Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0));
+}
+
+function hexToRgb(hex) {
+  const value = hex.replace('#', '');
+  return {
+    r: parseInt(value.slice(0, 2), 16),
+    g: parseInt(value.slice(2, 4), 16),
+    b: parseInt(value.slice(4, 6), 16),
+  };
+}
+
+function rgbToHex({ r, g, b }) {
+  return `#${[r, g, b].map(value => Math.round(value).toString(16).padStart(2, '0')).join('')}`;
+}
+
+function mixColor(from, to, amount) {
+  const a = hexToRgb(from);
+  const b = hexToRgb(to);
+  return rgbToHex({
+    r: a.r + (b.r - a.r) * amount,
+    g: a.g + (b.g - a.g) * amount,
+    b: a.b + (b.b - a.b) * amount,
+  });
+}
+
+function interpolateColor(score, stops) {
+  const value = clamp01(score);
+  for (let i = 1; i < stops.length; i += 1) {
+    const previous = stops[i - 1];
+    const next = stops[i];
+    if (value <= next.score) {
+      const range = next.score - previous.score || 1;
+      return mixColor(previous.color, next.color, (value - previous.score) / range);
+    }
+  }
+  return stops.at(-1).color;
+}
+
+const NODE_BACKGROUND_STOPS = [
+  { score: 0, color: '#eff6ff' },
+  { score: 0.35, color: '#dbeafe' },
+  { score: 0.62, color: '#93c5fd' },
+  { score: 1, color: '#1d4ed8' },
+];
+
+const NODE_BORDER_STOPS = [
+  { score: 0, color: '#bfdbfe' },
+  { score: 0.35, color: '#93c5fd' },
+  { score: 0.62, color: '#3b82f6' },
+  { score: 1, color: '#1e3a8a' },
+];
+
 function getNodeTone(score = 0) {
-  if (score >= 0.72) {
-    return {
-      background: '#0f766e',
-      border: '#134e4a',
-      text: '#ffffff',
-      badgeBackground: 'rgba(255, 255, 255, 0.16)',
-      badgeBorder: 'rgba(255, 255, 255, 0.4)',
-      badgeText: '#ffffff',
-      handle: '#134e4a',
-    };
-  }
-
-  if (score >= 0.45) {
-    return {
-      background: '#ccfbf1',
-      border: '#14b8a6',
-      text: '#134e4a',
-      badgeBackground: '#f0fdfa',
-      badgeBorder: '#5eead4',
-      badgeText: '#134e4a',
-      handle: '#0f766e',
-    };
-  }
-
-  if (score >= 0.2) {
-    return {
-      background: '#ecfeff',
-      border: '#67e8f9',
-      text: '#164e63',
-      badgeBackground: '#ffffff',
-      badgeBorder: '#a5f3fc',
-      badgeText: '#164e63',
-      handle: '#0891b2',
-    };
-  }
+  const value = clamp01(score);
+  const background = interpolateColor(value, NODE_BACKGROUND_STOPS);
+  const border = interpolateColor(value, NODE_BORDER_STOPS);
+  const isDark = value >= 0.78;
 
   return {
-    background: '#ffffff',
-    border: '#cbd5e1',
-    text: '#111827',
-    badgeBackground: '#f3f4f6',
-    badgeBorder: '#d1d5db',
-    badgeText: '#111827',
-    handle: '#6b7280',
+    background,
+    border,
+    text: isDark ? '#ffffff' : '#1e3a8a',
+    badgeBackground: isDark ? 'rgba(255, 255, 255, 0.16)' : '#ffffff',
+    badgeBorder: isDark ? 'rgba(255, 255, 255, 0.4)' : border,
+    badgeText: isDark ? '#ffffff' : '#1e3a8a',
+    handle: border,
   };
 }
 
@@ -121,7 +173,7 @@ function DebateNode({ data }) {
         boxSizing: 'border-box',
         background: tone.background,
         color: tone.text,
-        border: `2px solid ${data.isRoot && !hasAiScore ? '#111827' : tone.border}`,
+        border: `2px solid ${tone.border}`,
         borderRadius: 6,
         boxShadow: selectedRing,
         padding: '10px 12px',
@@ -213,9 +265,17 @@ function toReactFlowNodes(serverNodes, root, aiAnalysis, selectedNodeId) {
 }
 
 function toReactFlowEdges(serverEdges, aiAnalysis) {
-  return serverEdges.map((edge, index) => {
+  const scoredEdges = serverEdges.map((edge) => ({
+    ...edge,
+    key: edgeKey(edge),
+    rawVisualScore: getEdgeVisualScore(edge, aiAnalysis),
+    visualScoreSource: getEdgeVisualScoreSource(edge, aiAnalysis),
+  }));
+  const normalizedScores = normalizeEdgeScoresByParent(scoredEdges);
+
+  return scoredEdges.map((edge, index) => {
     const color = relationColor(edge.type);
-    const score = getEdgeVisualScore(edge, aiAnalysis);
+    const normalizedVisualScore = normalizedScores.get(edge.key) ?? 0.5;
     return {
       id: `e-${index}`,
       // Server edges are child -> parent. The display reads parent -> child.
@@ -224,7 +284,7 @@ function toReactFlowEdges(serverEdges, aiAnalysis) {
       type: 'smoothstep',
       style: {
         stroke: color,
-        strokeWidth: crToStroke(score),
+        strokeWidth: crToStroke(normalizedVisualScore),
         strokeLinecap: 'round',
       },
       markerEnd: {
@@ -237,8 +297,10 @@ function toReactFlowEdges(serverEdges, aiAnalysis) {
       },
       data: {
         ...edge,
-        visualScore: score,
-        visualScoreSource: aiAnalysis?.edges?.[edgeKey(edge)] ? 'ai' : 'formal',
+        visualScore: normalizedVisualScore,
+        rawVisualScore: edge.rawVisualScore,
+        normalizedVisualScore,
+        visualScoreSource: edge.visualScoreSource,
       },
     };
   });

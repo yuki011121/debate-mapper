@@ -213,13 +213,14 @@ function computeCR(graph, contextRoot) {
       leaf: isLeaf ? 1 : 0
     };
 
-    const score =
-      features.depth * 0.30 +
-      features.height * 0.22 +
-      features.branching * 0.18 +
-      features.outDegree * 0.10 +
-      features.siblings * 0.10 +
-      features.leaf * 0.10;
+    const score = node === contextRoot
+      ? 1
+      : features.depth * 0.30 +
+        features.height * 0.22 +
+        features.branching * 0.18 +
+        features.outDegree * 0.10 +
+        features.siblings * 0.10 +
+        features.leaf * 0.10;
 
     scores.set(node, {
       contextRoot,
